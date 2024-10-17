@@ -1,5 +1,6 @@
-#include <iostream>;
-#include <cstring>;
+#include <iostream>
+#include <cstring>
+
 using namespace std;
 
 struct pacientes{
