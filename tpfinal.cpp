@@ -100,12 +100,12 @@ struct Medico {
 
 
 void menu(Nodo<Registro>*&, FILE*&, FILE*&, char[][51]);
-void mostrarAltas();
+void mostrarAltas(Nodo<Registro>*&, FILE*&, FILE*&);
 void mostrarActualizaciones();
 void mostrarListados();
 void nuevoTurno();
 void nuevoMedico();
-void nuevoPaciente();
+void nuevoPaciente(FILE*&);
 
 int main() {
     char especialidades[20][51] ={"Cardiología", "Neurología", "Pediatría", "Ginecología", "Psiquiatría", "Dermatología", "Oftalmología", "Ortopedia", "Oncología", "Geriatría", "Endocrinología", "Nefrología", "Gastroenterología", "Neumología", "Reumatología", "Hematología", "Infectología", "Cirugía General", "Urología", "Medicina de Emergencias"};
@@ -153,7 +153,7 @@ void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char espe
         cin >> opcion;
 
         if (opcion == 1) {
-            mostrarAltas();
+            mostrarAltas(registro, pacientes, medicos);
         }
         else if (opcion == 2) {
 
@@ -174,7 +174,7 @@ void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char espe
     }
 }
 
-void mostrarAltas() {
+void mostrarAltas(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos) {
     bool salir = false;
     int opcion;
 
@@ -189,7 +189,7 @@ void mostrarAltas() {
         cin >> opcion;
 
         if (opcion == 1) {
-
+            nuevoPaciente(pacientes);
         }
         else if (opcion == 2) {
 
