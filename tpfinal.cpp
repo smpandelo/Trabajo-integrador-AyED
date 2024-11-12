@@ -143,6 +143,7 @@ void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char espe
     int opcion;
 
     while (!salir) {
+        cout << "\033[2J\033[1;1H"; // idea de facu semmartin
         cout << "Menu" << endl;
         cout << "1. Altas"  << endl;
         cout << "2. Actualizaciones" << endl;
@@ -179,6 +180,7 @@ void mostrarAltas(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos) {
     int opcion;
 
     while (!salir) {
+        cout << "\033[2J\033[1;1H"; // idea de facu semmartin
         cout << "Menu de altas" << endl;
         cout << "1. Nuevo paciente" << endl;
         cout << "2. Nuevo turno" << endl;
