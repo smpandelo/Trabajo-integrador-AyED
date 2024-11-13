@@ -407,8 +407,23 @@ void mostrarListados(Nodo<Registro> *&reg) {
 
 void turnospendientes(Nodo<Registro> *&reg){
     int mes, idmedico;
+    Nodo<Registro>*auxnodo = NULL;
     cout << "Ingrese un mes" << endl;
     cin >> mes;
-    cout << "ingrese el id del medico" << endl;
+    cout << "Ingrese el id del medico" << endl;
+    cin >> idmedico;
+
+    auxnodo = buscar(reg, idmedico, criterioMedico);
+    if(auxnodo == NULL){
+        cout << "Medico no encontrado" << endl;
+        return;
+    }
+    auxnodo->info.turno[mes-1][31];
+    int i;
+    for(i = 0; i < 31; i++){
+        cout << auxnodo->info.turno[mes-1][i]
+    }
+   
+    
     
 }
