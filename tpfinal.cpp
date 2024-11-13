@@ -98,14 +98,24 @@ struct Medico {
     int tiempoCon;
 };
 
+struct Cancelados {
+    //Nombre del paciente, nombre del médico, especialidad, día de atención.
+    char nombrePaciente[51];
+    char nombreMedico[51];
+    int especialidad;
+    int dia;
+};
 
 void menu(Nodo<Registro>*&, FILE*&, FILE*&, char[][51]);
 void mostrarAltas(Nodo<Registro>*&, FILE*&, FILE*&);
-void mostrarActualizaciones();
-void mostrarListados();
-void nuevoTurno();
-void nuevoMedico();
+void mostrarActualizaciones(Nodo<Registro>*&);
+void mostrarListados(Nodo<Registro>*, FILE*, FILE*, char [][51]);
+void nuevoTurno(Nodo<Registro>*&);
+void nuevoMedico(FILE*&);
 void nuevoPaciente(FILE*&);
+void turnosPendientes(Nodo<Registro>*&);
+void cantidadAtencionesEfectivas(Nodo<Registro>*&);
+void cancelaciones(Nodo<Registro>*, FILE*, FILE*, char [][51]);
 
 int main() {
     char especialidades[20][51] ={"Cardiología", "Neurología", "Pediatría", "Ginecología", "Psiquiatría", "Dermatología", "Oftalmología", "Ortopedia", "Oncología", "Geriatría", "Endocrinología", "Nefrología", "Gastroenterología", "Neumología", "Reumatología", "Hematología", "Infectología", "Cirugía General", "Urología", "Medicina de Emergencias"};
@@ -157,11 +167,11 @@ void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char espe
             mostrarAltas(registro, pacientes, medicos);
         }
         else if (opcion == 2) {
-
+            mostrarActualizaciones(registro);
         }
         else if(opcion == 3)
         {
-            mostrarlistado()
+            mostrarListados(registro, pacientes, medicos, especialidades);
         }
         else if(opcion == 0)
         {
@@ -194,11 +204,11 @@ void mostrarAltas(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos) {
             nuevoPaciente(pacientes);
         }
         else if (opcion == 2) {
-
+            nuevoTurno(registro);
         }
         else if(opcion == 3)
         {
-
+            nuevoMedico(medicos);
         }
         else if(opcion == 0)
         {
@@ -365,7 +375,7 @@ void mostrarActualizaciones(Nodo<Registro> *&reg) {
     turno->info.status = nuevoStatus;
 }
 
-void mostrarListados(Nodo<Registro> *&reg) {
+void mostrarListados(Nodo<Registro>* reg, FILE* paciente, FILE* medico, char especialidades[][51]) {
         
     bool salir = false;
     int opcion;
@@ -382,14 +392,14 @@ void mostrarListados(Nodo<Registro> *&reg) {
         cin >> opcion;
 
         if (opcion == 1) {
-            turnosPendientes(mes, idmedico);
+            turnosPendientes(reg);
         }
         else if (opcion == 2) {
-
+            cantidadAtencionesEfectivas(reg);
         }
         else if(opcion == 3)
         {
-
+            cancelaciones(reg, paciente, medico, especialidades);
         }
         else if(opcion == 0)
         {
@@ -405,7 +415,8 @@ void mostrarListados(Nodo<Registro> *&reg) {
         
 }
 
-void turnospendientes(Nodo<Registro> *&reg){
+void turnosPendientes(Nodo<Registro> *&reg){
+    char meses[12][11] = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
     int mes, idmedico;
     Nodo<Registro>*auxnodo = NULL;
     cout << "Ingrese un mes" << endl;
@@ -418,12 +429,74 @@ void turnospendientes(Nodo<Registro> *&reg){
         cout << "Medico no encontrado" << endl;
         return;
     }
-    auxnodo->info.turno[mes-1][31];
     int i;
+    cout << meses[mes-1] << "\n";
     for(i = 0; i < 31; i++){
-        cout << auxnodo->info.turno[mes-1][i]
+        cout << "Turnos dia " << i+1 << ":"  << "\n";
+        Nodo<Turno>* auxnodo2 = auxnodo->info.turnos[mes-1][i];
+        while(auxnodo2 != NULL){
+            if(auxnodo2->info.status == 'P'){
+                cout << auxnodo2->info.idUnico << endl;
+                cout << auxnodo2->info.hora << endl;
+                cout << auxnodo2->info.idPaciente << "\n";
+            }
+            auxnodo2 = auxnodo2->sgte;
+        }
+    } 
+    return;
+}
+
+void cantidadAtencionesEfectivas(Nodo<Registro> *&reg){ 
+    char meses[12][11] = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+    int mes, cont = 0;
+    cout << "Ingrese un mes: " << endl; 
+    cin >> mes;
+
+    Nodo<Registro>*auxnodo = reg;
+
+    while(auxnodo != NULL){
+        for(int i=0; i<31; i++){
+            Nodo<Turno>* auxnodo2 = auxnodo->info.turnos[mes-1][i];
+            while(auxnodo2 != NULL){
+                if(auxnodo2->info.status == 'A'){
+                    cont++;
+                }
+                auxnodo2 = auxnodo2->sgte;
+            }
+        }
+        auxnodo = auxnodo->sgte;
     }
-   
+    cout << "La cantidad de atenciones efectivas de todos los médicos del sistema es para el mes " << meses[mes-1] << " es de: " << cont;
+    return;
+}
+
+void cancelaciones(Nodo<Registro>* reg, FILE* paciente, FILE* medico, char especialidades[][51]){
+    Paciente pa;
+    Medico me;
+    int mes;
+    cout << "Ingrese un mes: "; 
+    cin >> mes;
     
-    
+    Nodo<Registro>*auxnodo = reg;
+
+    while(auxnodo != NULL){
+        for(int i=0; i<31; i++){
+            Nodo<Turno>* auxnodo2 = auxnodo->info.turnos[mes-1][i];
+            while(auxnodo2 != NULL){
+                if(auxnodo2->info.status == 'C'){
+                    fseek(paciente, (auxnodo2->info.idPaciente-1)*sizeof(Paciente), SEEK_SET);
+                    fread(&pa, sizeof(Paciente), 1, paciente);
+                    cout << "Nombre paciente: " << pa.nom << endl;
+                    fseek(medico, (auxnodo->info.idMedico-1)*sizeof(Medico), SEEK_SET);
+                    fread(&me, sizeof(Medico), 1, medico);
+                    cout << "Nombre medico: " << me.nom << endl;
+                    cout << "Especialidad: " << especialidades[me.idEspe-1] << endl;
+                    cout << "Dia de atencion : " << auxnodo2->info.dia << "\n";
+                }
+                auxnodo2 = auxnodo2->sgte;
+            }
+        }
+        auxnodo = auxnodo->sgte;
+    }
+    return;
 }
