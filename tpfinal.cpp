@@ -161,7 +161,7 @@ void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char espe
         }
         else if(opcion == 3)
         {
-
+            mostrarlistado()
         }
         else if(opcion == 0)
         {
@@ -365,6 +365,50 @@ void mostrarActualizaciones(Nodo<Registro> *&reg) {
     turno->info.status = nuevoStatus;
 }
 
-void mostrarListados() {
+void mostrarListados(Nodo<Registro> *&reg) {
+        
+    bool salir = false;
+    int opcion;
 
+    while (!salir) {
+        cout << "\033[2J\033[1;1H"; // idea de facu semmartin
+        cout << "Menu de listados" << endl;
+        cout << "1. Turnos pendientes" << endl;
+        cout << "2. Cantidad de atenciones efectivas" << endl;
+        cout << "3. Cancelaciones" << endl;
+        cout << "0. Salir" << endl;
+
+        cout << "Selecione una opcion: " << endl;
+        cin >> opcion;
+
+        if (opcion == 1) {
+            turnosPendientes(mes, idmedico);
+        }
+        else if (opcion == 2) {
+
+        }
+        else if(opcion == 3)
+        {
+
+        }
+        else if(opcion == 0)
+        {
+            cout << "Usted esta saliendo del programa"<<endl;
+            salir = true;
+        }
+        else
+        {
+            cout<< "Seleccione una opcion correcta"<<endl;
+        }
+
+    }
+        
+}
+
+void turnospendientes(Nodo<Registro> *&reg){
+    int mes, idmedico;
+    cout << "Ingrese un mes" << endl;
+    cin >> mes;
+    cout << "ingrese el id del medico" << endl;
+    
 }
