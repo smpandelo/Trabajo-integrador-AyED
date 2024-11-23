@@ -384,8 +384,8 @@ void mostrarActualizaciones(Nodo<Registro> *&registro) {
 	cout << "ID del turno: ";
 	cin >> idTurno;
 
-	for (i = 0; i < 12 && turno != NULL; i++) {
-		for (j = 0; j < 31 && turno != NULL; j++) {
+	for (i = 0; i < 12 && turno == NULL; i++) {
+		for (j = 0; j < 31 && turno == NULL; j++) {
 			turno = buscar(medico->info.turnos[i][j], idTurno, criterioID);
 		}
 	}
@@ -504,7 +504,7 @@ void cantidadAtencionesEfectivas(Nodo<Registro> *registro) {
 		auxRegistro = auxRegistro->sgte;
 	}
 
-	cout << "La cantidad de atenciones efectivas de todos los médicos del sistema es para el mes " << meses[mes - 1]
+	cout << "La cantidad de atenciones efectivas de todos los médicos del sistema para el mes de " << meses[mes - 1]
 		 << " es de: " << cont << endl;
 
 	cout << "Ingrese cualquier caracter y presione Enter para continuar: ";
