@@ -43,6 +43,19 @@ Nodo<T> *insertarOrdenado(Nodo<T> *&lista, T dato, int (*criterio)(T, T)) {
 	return p;
 }
 
+template <typename T>
+int cantReg(FILE *archivo) {
+	int cr, posActual = ftell(archivo);
+
+	fseek(archivo, 0, SEEK_END);
+
+	cr = ftell(archivo) / sizeof(T);
+
+	fseek(archivo, posActual, SEEK_SET);
+
+	return cr;
+}
+
 struct Paciente {
 	int id;
 	char nom[51];
@@ -109,7 +122,7 @@ int main() {
 								   "Infectología",		"Cirugía General", "Urología",		 "Medicina de Emergencias"};
 	FILE *pacientes = fopen("pacientes.bin", "rb+");
 	FILE *medicos = fopen("medicos.bin", "rb+");
-    Nodo<Registro> *registro = cargarRegistro(pacientes, medicos);
+	Nodo<Registro> *registro = cargarRegistro(pacientes, medicos);
 
 	menu(registro, pacientes, medicos, especialidades);
 
@@ -118,6 +131,8 @@ int main() {
 
 
 int criterioMedico(Registro lista, int dato) { return lista.idMedico - dato; }
+
+int criterioCarga(Registro lista, Registro dato) { return lista.idMedico - dato.idMedico; }
 
 int criterioPaciente(Turno lista, int dato) { return lista.idPaciente - dato; }
 
@@ -128,16 +143,48 @@ int criterioTurno(Turno lista, Turno dato) { return lista.hora - dato.hora; }
 int criterioID(Turno lista, int dato) { return lista.idUnico - dato; }
 
 Nodo<Registro> *cargarRegistro(FILE *pacientes, FILE *medicos) {
-    Paciente paciente;
-    Medico medico;
-    Registro entrada;
-    Nodo<Registro> *registro = NULL;
+	int i, j = 0;
+    int tamPacientes = cantReg<Paciente>(pacientes);
+    int tamMedicos = cantReg<Medico>(medicos);
+	Paciente paciente[tamPacientes];
+	Medico medico[tamMedicos];
+	Registro entrada;
+	Turno turno;
+	Nodo<Registro> *registro = NULL;
+    Nodo<Registro> *aux = NULL;
+    Nodo<Turno> *auxTurno = NULL;
 
-    while (fread(&medico, sizeof(Medico), 1, medicos)) {
-        entrada.idMedico = medico.id;
+	for (i = 0; i < 12; i++) {
+		for (j = 0; j < 31; j++) {
+			entrada.turnos[i][j] = NULL;
+		}
+	}
+
+    i = 0;
+    j = 0;
+
+    fread(paciente, sizeof(Paciente), tamPacientes, pacientes);
+    fread(medico, sizeof(Medico), tamMedicos, medicos);
+
+    for (i = 0; i < tamMedicos; i++) {
+        entrada.idMedico = medico[i].id;
+
+        aux = insertarOrdenado(registro, entrada, criterioCarga);
+
+
+        for (j = 0; j < (tamPacientes / tamMedicos) && medico[i].rangoHor[0] + j <= medico[i].rangoHor[1]; j++) {
+            turno.idPaciente = paciente[j + i].id;
+            turno.idUnico = j + 1;
+            turno.status = 'P';
+            turno.dia = j + 1 - (31 * ((j + 1) / 31));
+            turno.mes = j + 1 - (12 * ((j + 1) / 12));
+            turno.hora = medico[i].rangoHor[0] + j;
+
+            insertarOrdenado(aux->info.turnos[turno.mes - 1][turno.dia - 1], turno, criterioTurno);
+        }
     }
 
-    return registro;
+	return registro;
 }
 
 void menu(Nodo<Registro> *&registro, FILE *&pacientes, FILE *&medicos, char especialidades[][51]) {
@@ -386,7 +433,8 @@ void mostrarListados(Nodo<Registro> *registro, FILE *pacientes, FILE *medicos, c
 	}
 }
 
-void turnosPendientes(Nodo<Registro> *&registro) {
+void turnosPendientes(Nodo<Registro> *registro) {
+	char control;
 	char meses[12][11] = {"Enero", "Febrero", "Marzo",		"Abril",   "Mayo",		"Junio",
 						  "Julio", "Agosto",  "Septiembre", "Octubre", "Noviembre", "Diciembre"};
 	int i, mes, idMedico;
@@ -414,18 +462,23 @@ void turnosPendientes(Nodo<Registro> *&registro) {
 
 		while (listaMes != NULL) {
 			if (listaMes->info.status == 'P') {
-				cout << listaMes->info.idUnico << endl;
-				cout << listaMes->info.hora << endl;
-				cout << listaMes->info.idPaciente << endl;
+				cout << "ID del turno: " << listaMes->info.idUnico << endl;
+				cout << "Hora: " << listaMes->info.hora << endl;
+				cout << "ID del paciente: " << listaMes->info.idPaciente << endl;
 			}
 
 			listaMes = listaMes->sgte;
 		}
 	}
+
+	cout << "Ingrese cualquier caracter y presione Enter para continuar: ";
+	cin >> control;
+
 	return;
 }
 
 void cantidadAtencionesEfectivas(Nodo<Registro> *registro) {
+    char control;
 	char meses[12][11] = {"Enero", "Febrero", "Marzo",		"Abril",   "Mayo",		"Junio",
 						  "Julio", "Agosto",  "Septiembre", "Octubre", "Noviembre", "Diciembre"};
 	int mes, cont = 0;
@@ -452,13 +505,17 @@ void cantidadAtencionesEfectivas(Nodo<Registro> *registro) {
 	}
 
 	cout << "La cantidad de atenciones efectivas de todos los médicos del sistema es para el mes " << meses[mes - 1]
-		 << " es de: " << cont;
+		 << " es de: " << cont << endl;
+
+	cout << "Ingrese cualquier caracter y presione Enter para continuar: ";
+	cin >> control;
 
 	return;
 }
 
 void cancelaciones(Nodo<Registro> *registro, FILE *pacientes, FILE *medicos, char especialidades[][51]) {
 	int mes;
+    char control;
 	Paciente paciente;
 	Medico medico;
 	Nodo<Registro> *auxRegistro = registro;
@@ -471,6 +528,7 @@ void cancelaciones(Nodo<Registro> *registro, FILE *pacientes, FILE *medicos, cha
 	while (auxRegistro != NULL) {
 		for (int i = 0; i < 31; i++) {
 			listaMes = auxRegistro->info.turnos[mes - 1][i];
+
 			while (listaMes != NULL) {
 				if (listaMes->info.status == 'C') {
 					fseek(pacientes, (listaMes->info.idPaciente - 1) * sizeof(Paciente), SEEK_SET);
@@ -483,7 +541,7 @@ void cancelaciones(Nodo<Registro> *registro, FILE *pacientes, FILE *medicos, cha
 
 					cout << "Nombre medico: " << medico.nom << endl;
 					cout << "Especialidad: " << especialidades[medico.idEspe - 1] << endl;
-					cout << "Dia de atencion : " << listaMes->info.dia << "\n";
+					cout << "Dia de atencion : " << listaMes->info.dia << endl;
 				}
 
 				listaMes = listaMes->sgte;
@@ -492,5 +550,9 @@ void cancelaciones(Nodo<Registro> *registro, FILE *pacientes, FILE *medicos, cha
 
 		auxRegistro = auxRegistro->sgte;
 	}
+
+	cout << "Ingrese cualquier caracter y presione Enter para continuar: ";
+	cin >> control;
+
 	return;
 }
